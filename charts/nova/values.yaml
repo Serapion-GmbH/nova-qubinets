@@ -1,0 +1,165 @@
+global:
+  image:
+    repository: "ghcr.io/serapion-gmbh"
+    pullPolicy: "IfNotPresent"
+    registryCredentials:
+      enabled: true
+      username: "mirneshalilovic"
+      password: "token"
+      email: "mirnes.halilovic@serapion.net"
+      registry: "ghcr.io"
+      name: "docker-image-pull"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+  port: 80
+
+services:
+  nova-chat:
+    ingress:
+      enabled: true
+      annotations: 
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - host: chat.127.0.0.1.nip.io
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+    replicaCount: 1
+    image:
+      tag: "v1.0.0"
+    env:
+      - name: "CHAT_ENV"
+        value: "production"
+    configMap:
+      enabled: true
+      data:
+        CHAT_CONFIG: "Chat configuration value"
+  nova-store:
+    replicaCount: 1
+    image:
+      tag: "0.7.2"
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 80
+    serviceAccount:
+      create: true
+      name: ""
+    ingress:
+      enabled: true
+      annotations: 
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - host: dev.api-store.127.0.0.1.nip.io
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []
+    envFromConfigMap: true
+    configMap:
+      enabled: true
+      data:
+        STORE_CONFIG: "Store configuration value"
+    env:
+      - name: RECORD_ENCRYPTION_KEY
+        value: ""
+      - name: EXTERNAL_BASE_URL
+        value: ""
+      - name: MONGO_URI
+        value: ""
+      - name: NOVA_BASE_URL
+        value: ""
+      - name: AUTH0__DOMAIN
+        value: ""
+      - name: AUTH0__AUDIENCE
+        value: ""
+  nova-core:
+    ingress:
+      enabled: true
+      annotations: 
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - host: dev.api-core.127.0.0.1.nip.io
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []
+    replicaCount: 1
+    image:
+      tag: "9a2a6254ea580d8ab98e66694cc93e42b9717263"
+    env:
+      - name: "AUTH0__DOMAIN"
+        value: ""
+      - name: "AUTH0__AUDIENCE"
+        value: ""
+      - name: "DB__URI"
+        value: ""
+      - name: "DB__DATABASE_NAME"
+        value: ""
+      - name: "ORGANIZATION__API_KEY__ISSUER"
+        value: ""
+      - name: "ORGANIZATION__API_KEY__AUDIENCE"
+        value: ""
+      - name: "ORGANIZATION_USER__AUTH__DOMAIN"
+        value: ""
+      - name: "ORGANIZATION_USER__AUTH__AUDIENCE"
+        value: ""
+      - name: "CLIENT_SESSION__SESSION_KEY__ISSUER"
+        value: ""
+      - name: "CLIENT_SESSION__SESSION_KEY__AUDIENCE"
+        value: ""
+      - name: "ORGANIZATION__API_KEY__SIGNING_KEY"
+        value: ""
+      - name: "CLIENT_SESSION__SESSION_KEY__SIGNING_KEY"
+        value: ""
+      - name: "ORGANIZATION__API_KEY__PUBLIC_KEY"
+        value: ""
+      - name: "CLIENT_SESSION__SESSION_KEY__PUBLIC_KEY"
+        value: ""
+      - name: "ADDON__PUBLIC_KEY"
+        value: ""
+      - name: "LLM_CONFIG_STORE_SECURITY__AUTH_ENCRYPTION_KEY"
+        value: ""
+      - name: "KEY_STORE__WEBHOOK_ENCRYPTION_PASSWORD"
+        value: ""
+      - name: "HUGGINGFACE_TOKEN"
+        value: ""
+      - name: "ORGANIZATION_USER__DEFAULT_SUPERUSER_IDS"
+        value: ""
+      - name: "CAPTCHA__SECRET_KEY"
+        value: ""
+      - name: "CAPTCHA__URL"
+        value: ""
+        
+  nova-webapp:
+    replicaCount: 1
+    image:
+      tag: "v1.0.0"
+    ingress:
+      enabled: true
+      annotations: 
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - host: platform.127.0.0.1.nip.io
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+  nova-store-webapp:
+    replicaCount: 1
+    image:
+      tag: "v1.0.0"
+    ingress:
+      enabled: true
+      annotations: 
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - host: store.127.0.0.1.nip.io
+          paths:
+            - path: /
+              pathType: ImplementationSpecific

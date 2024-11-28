@@ -1,0 +1,37 @@
+{{- range $serviceName, $service := .Values.services }}
+{{- $root := $ }}
+{{- $fullname := include "common.fullname" (dict "serviceName" $serviceName) }}
+{{- $labels := include "common.labels" (dict "Chart" $root.Chart "Release" $root.Release "serviceName" $serviceName) }}
+{{- $selectorLabels := include "common.selectorLabels" (dict "Chart" $root.Chart "Release" $root.Release "serviceName" $serviceName) }}
+
+{{/* Set default values */}}
+{{- $serviceType := "ClusterIP" }}
+{{- $servicePort := $root.Values.global.port }}
+
+{{/* Override defaults if service configuration is provided */}}
+{{- with $service.service }}
+  {{- if .type }}
+    {{- $serviceType = .type }}
+  {{- end }}
+  {{- if .port }}
+    {{- $servicePort = .port }}
+  {{- end }}
+{{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullname }}
+  labels:
+{{ $labels | nindent 4 }}
+spec:
+  type: {{ $serviceType }}
+  ports:
+    - port: {{ $servicePort }}
+      targetPort: {{ $servicePort }}
+      protocol: TCP
+      name: http
+  selector:
+{{ $selectorLabels | nindent 4 }}
+{{- end }}
