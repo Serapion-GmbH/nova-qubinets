@@ -1,0 +1,74 @@
+{{- range $serviceName, $service := .Values.services }}
+{{- $root := $ }}
+{{- $fullname := include "common.fullname" (dict "serviceName" $serviceName) }}
+{{- $labels := include "common.labels" (dict "Chart" $root.Chart "Release" $root.Release "serviceName" $serviceName) }}
+{{- $selectorLabels := include "common.selectorLabels" (dict "Chart" $root.Chart "Release" $root.Release "serviceName" $serviceName) }}
+
+{{/* Set default values */}}
+{{- $replicaCount := $service.replicaCount | default 1 }}
+{{- $imageTag := $service.image.tag | default "latest" }}
+{{- $imageRepository := printf "%s/%s" $root.Values.global.image.repository $serviceName }}
+{{- $imagePullPolicy := $root.Values.global.image.pullPolicy | default "IfNotPresent" }}
+{{- $servicePort := $root.Values.global.port }}
+
+{{/* Override defaults if service configuration is provided */}}
+{{- with $service.service }}
+  {{- if .port }}
+    {{- $servicePort = .port }}
+  {{- end }}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullname }}
+  labels:
+{{ $labels | nindent 4 }}
+spec:
+  replicas: {{ $replicaCount }}
+  selector:
+    matchLabels:
+{{ $selectorLabels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+{{ $selectorLabels | nindent 8 }}
+    spec:
+      {{- with $service.serviceAccount }}
+      {{- if .create }}
+      serviceAccountName: {{ .name | default (printf "%s-sa" $fullname) }}
+      {{- end }}
+      {{- end }}
+      {{- if $root.Values.global.image.registryCredentials.enabled }}
+      imagePullSecrets:
+        - name: {{ $root.Values.global.image.registryCredentials.name }}
+      {{- end }}
+      containers:
+        - name: {{ $serviceName }}
+          image: "{{ $imageRepository }}:{{ $imageTag }}"
+          imagePullPolicy: {{ $imagePullPolicy }}
+          ports:
+            - containerPort: {{ $servicePort }}
+          resources:
+            {{- toYaml $service.resources | default $root.Values.global.resources | nindent 12 }}
+          {{- if $service.env }}
+          env:
+            {{- toYaml $service.env | nindent 12 }}
+          {{- end }}
+          {{- if $service.envFromConfigMap }}
+            {{- if $service.configMap }}
+              {{- if $service.configMap.enabled }}
+          envFrom:
+            - configMapRef:
+                name: {{ $serviceName }}-config
+              {{- end }}
+            {{- end }}
+          {{- end }}
+      nodeSelector:
+        {{- toYaml $service.nodeSelector | default "{}" | nindent 8 }}
+      tolerations:
+        {{- toYaml $service.tolerations | default "[]" | nindent 8 }}
+      affinity:
+        {{- toYaml $service.affinity | default "{}" | nindent 8 }}
+{{- end }}
