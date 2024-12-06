@@ -3,6 +3,15 @@ entries:
   nova:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2024-12-06T08:51:44.584189547Z"
+    description: A Helm chart for Nova AI app.
+    digest: 5cff0fc682a7e844c436df827b6234b40b17e99aeb9702af35410e9fb8f13a1e
+    name: nova
+    urls:
+    - https://github.com/Serapion-GmbH/nova-qubinets/releases/download/nova-0.1.4/nova-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2024-12-03T10:25:45.114905647Z"
     description: A Helm chart for Nova AI app.
     digest: e2e4ed0a9baefd5185d7fb416b8686e8f4128cab59f8915649647868768f4bcf
@@ -37,4 +46,4 @@ entries:
     urls:
     - https://github.com/Serapion-GmbH/nova-qubinets/releases/download/nova-0.1.0/nova-0.1.0.tgz
     version: 0.1.0
-generated: "2024-12-03T10:25:45.11494322Z"
+generated: "2024-12-06T08:51:44.584213131Z"
