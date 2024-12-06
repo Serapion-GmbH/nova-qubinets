@@ -1,37 +1,40 @@
-{{- range $serviceName, $service := .Values.services }}
-{{- $root := $ }}
-{{- $fullname := include "common.fullname" (dict "Release" $root.Release "Chart" $root.Chart "serviceName" $serviceName) }}
-{{- $labels := include "common.labels" (dict "Release" $root.Release "Chart" $root.Chart "serviceName" $serviceName) }}
-
-{{- with $service.ingress }}
-{{- if .enabled }}
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ $fullname }}
+  name: {{ .Release.Name }}-ingress
   labels:
-{{ $labels | nindent 4 }}
+    app.kubernetes.io/app: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
-    {{- toYaml .annotations | nindent 4 }}
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: {{ .Release.Name }}-letsencrypt-issuer
+
 spec:
+  tls:
+    - secretName: {{ .Values.global.tls.secretName }}
+      hosts:
+      {{- range $serviceName, $service := .Values.services }}
+        {{- if $service.ingress.enabled }}
+        {{- range $host := $service.ingress.hosts }}
+        - {{ $host.host }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
   rules:
-    {{- range .hosts }}
-    - host: {{ .host }}
+  {{- range $serviceName, $service := .Values.services }}
+    {{- if $service.ingress.enabled }}
+    - host: {{ (index $service.ingress.hosts 0).host }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            pathType: {{ .pathType }}
-            backend:
-              service:
-                name: {{ $fullname }}
-                port:
-                  number: {{ (index $service "service").port | default $.Values.global.port }}
-          {{- end }}
+        {{- range (index $service.ingress.hosts 0).paths }}
+        - path: {{ .path }}
+          pathType: {{ .pathType }}
+          backend:
+            service:
+              name: {{ $serviceName }}
+              port:
+                number: {{ (index $service "service").port | default $.Values.global.port }}
+        {{- end }}
     {{- end }}
-  tls:
-    {{- toYaml .tls | nindent 4 }}
-{{- end }}
-{{- end }}
-{{- end }}
+  {{- end }}

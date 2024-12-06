@@ -1,4 +1,6 @@
 global:
+  tls:
+    secretName: nova-wildcard-domain-tls
   image:
     repository: "ghcr.io/serapion-gmbh"
     pullPolicy: "IfNotPresent"
@@ -40,6 +42,8 @@ services:
       data:
         CHAT_CONFIG: "Chat configuration value"
   nova-store:
+    service:
+      port: 8000
     replicaCount: 1
     image:
       tag: "0.7.2"
@@ -80,6 +84,8 @@ services:
       - name: AUTH0__AUDIENCE
         value: ""
   nova-core:
+    service:
+      port: 8000
     ingress:
       enabled: true
       annotations: 
