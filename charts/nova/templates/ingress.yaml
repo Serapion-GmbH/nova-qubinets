@@ -8,8 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     kubernetes.io/ingress.class: nginx
-    cert-manager.io/cluster-issuer: {{ .Release.Name }}-letsencrypt-issuer
-
+    cert-manager.io/issuer: {{ .Release.Name }}-letsencrypt-issuer
 spec:
   tls:
     - secretName: {{ .Values.global.tls.secretName }}
