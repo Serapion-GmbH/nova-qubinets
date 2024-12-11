@@ -1,6 +1,6 @@
 global:
   tls:
-    secretName: nova-wildcard-domain-tls
+    secretName: wildcard-domain-tls
   image:
     repository: "ghcr.io/serapion-gmbh"
     pullPolicy: "IfNotPresent"
@@ -169,3 +169,4 @@ services:
           paths:
             - path: /
               pathType: ImplementationSpecific
+
