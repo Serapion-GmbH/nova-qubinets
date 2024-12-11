@@ -9,15 +9,13 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      location / {
-        if ($host = "{{ $novaCoreHost }}") {
+    nginx.ingress.kubernetes.io/server-snippet: |
+      if ($host = "{{ $novaCoreHost }}") {
           proxy_set_header Connection '';
           proxy_http_version 1.1;
           chunked_transfer_encoding off;
           proxy_buffering off;
           proxy_cache off;
-        }
       }
 spec:
   tls:
