@@ -10,6 +10,9 @@ metadata:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
     nginx.ingress.kubernetes.io/proxy-http-version: "1.0"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: '600'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '600'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '600
 spec:
   tls:
     - secretName: {{ .Values.global.tls.secretName }}
